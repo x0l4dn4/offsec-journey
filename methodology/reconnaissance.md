@@ -1,5 +1,7 @@
 > Note this is just a draft. Notes has not been completed.
 
+Nmap means network mapper
+
 ### Passive reconnosinance
 
 
@@ -17,9 +19,6 @@ Both protocols use the concept of ports to allow for *multiple applications to c
 
 
 > The file `/etc/services` on most Unix machines contains a mapping of common applications to their default port number. 
-
-
-
 
 
 > Some applications such as `PortSentry` exist for the sole purpose of confusing or frustrating port scans. Additionally, firewall features like `SYN-cookies` can make *ports appear open* when they are actually closed.
@@ -53,120 +52,60 @@ Also requests that Nmap try to guess the remote operating system via a series of
 Nmap default, which is `-PE -PS443 -PA80 -PP`
 These are all host discovery techniques (ping types) used in combination to determine which targets on a network are really available and avoid wasting a lot of time scanning IP addresses that are not in use. TODO READ ABOUT IT
 
-##### DNS and subdomains passively
-
-robots.txt check it out if a web server is available on the exam.
-
-XML sitemap  author-sitemap.xml,  category-sitemap.xml page-sitemap.xml
-
-```bash
-host www.danielcallejo.dev
-```
 
 
-```bash
-dnsrecon -d www.danielcallejo.dev
-```
+### Types of scans.
 
 
-https://dnsdumpster.com/
+The `SYN` scan relies on three-way handrhake process in which the initial `SYN` packet is sent to a target host, which will respond with a `SYN-ACK` packet if the port is open.
 
-```bash
-whois
-```
+However, the *port scanner does not complete the TCP three-stage handshake* by sending an `ACK` packet but instead sends a `RST` packet, shutting down the connection.
 
-https://who.is/
+This is referred to as a `stealth scan`, as Unix systems would record or log a connection attempt only if the three-stage handshake were completed.
+
+> Using the SYN scan, the scanner could determine which ports were open on a remote system without being logged.
+
+
+If no service is listening on a scanned port, the attacker will not receive a `SYN/ACK`. Depending on the configuration of the target's operating system, the attacker could receive an `RST` packet in return, indicating that the port is *closed*.
+
+Alternatively, the attacker may receive no response at all. No response could mean that the port is *filtered* by an intermediate device, such as a firewall or the host itself.
+
+On the other hand, it could just be that the response was lost in transit. Thus, while this result typically indicates that the port is closed, but you don't know.
 
 
 
-```bash
-sublist3r -d hackersploit.org 
-```
+#### Host discovery
+
+The -s* options select *scan types*
+
+List Scan (-sL)
+
+This merely lists hosts for scanning, including reverse DNS lookups. It is often surprising how much useful information simple hostnames give out. However, **no traffic is sent to the targets**. This is useful for validating the range of IPs you are working with. If a host's domain name is not recognizeable, it is worth investigating further to prevent scanning the wrong company's network.
 
 
-##### Website footprinting passively
+No port Scan (-sn)
 
-Builtwith, and wappalizer extension
+Ping Scan allows you to effectively run a ping sweep against the targets that is, there is no port scanning, but unlike the List Scan, we are sending data in the form of pings (specifically, an ICMP ECHO request) to the targets. 
 
-```bash
-whatweb https://danielcallejo.dev/
-```
+The default host discovery done with `-sn` consists of an ICMP echo request, TCP SYN to port 443, TCP ACK to port 80, and an ICMP timestamp request by default.
 
+When executed by an unprivileged user, only SYN packets are sent (using a connect call) to ports 80 and 443 on the target.
 
-https://sitereport.netcraft.com/  Fow downloading entire websites
+When a privileged user tries to scan targets on a local ethernet network, ARP requests are used unless `--send-ip` was specified. 
 
+If ICMP packets are blocked, you can also use TCP ACK packets. This is often referred to as a *TCP Ping*.
 
-https://github.com/enablesecurity/wafw00f  Firefall footprinting tool
+The RFC states that *unsolicited ACK packets should return a TCP RST*.
 
+So, if you send this type of packet to a port that is allowed through a firewall, such as port 80, the target should respond with an RST indicating that the target is active.
 
-Google dorks  [Google Hacking Database (GHDB) - Google Dorks, OSINT, Recon](https://www.exploit-db.com/google-hacking-database)
+Scanning UDP is more difficult as it is a *connectionless protocol* and does not use a handshake like TCP. With UDP, the following sequence is used:
+- Source sends UDP packet to target
+- Target checks to see if the port/protocol is active then takes action accordingly
 
+This makes scanning UDP ports especially challenging. If you receive a response, it will be one of three types: an ICMP type 3 message if the port is closed and the firewall allows the traffic, a disallowed message from the firewall, or a response from the service itself. Otherwise, no response could mean that the port is open, but it could also mean that the traffic was blocked or simply didn't make it to the target.
 
-Use waybackmachine to find sensitive information that could have been removed
-
-
-## Enumerating emails passively
-
-theHarvester also gets subdomains, IPs...
-
-```bash
-theHarvester -d ine.com -b duckduckgo,yahoo,baidu
-```
+Many administrators tend to focus more on securing TCP-based services and often don't consider UDP-based services when determining their security policies. With this in mind, you can sometimes find (and exploit) vulnerabilities in UDP-based services, giving you another potential entry point to your target system.
 
 
-
-
-haveIbeenPwned when obtaining emails for targets
-
-
-
-## Actively Reconnissance
-
-DNS interrogation is the process of enumerating DNS records for a specificic domain.
-
-In some cases, DNS server admins may want to copy or transfer zone files from one DNS server to another. 
-
-If misconfigured and left unsecured, this functionality can be abused by attackers to copy the zone file from primary DNS server to another DNS server.
-
-
-
-dnsenum
-
-```bash
-dnsrecon -d zonetransfer.me
-```
-
-```bash
-fierce --domain zonetransfer.me
-```
-
-dnsdumpster
-
-
-/etc/hosts  
-
-
-## Scanning with nmap
-
-```bash
-sudo nmap -sn 192.168.1.0/24  # Note the use of sudo, look why - Ping scan
-```
-
-When lunching nmap with no options you are performing a SYN scan on a thousand of the most frecuently used ports. When you are dealing with a Windows machine will typically block ICMP pings by default. (Host seems down).
-
-We can use the -Pn option instead.
-
-To list all the ports -p- option or -p1-1000  from 1 to 1000
-
--sU to perform a UDP scan.
-
-
-LIstar rutas disponibles en un servidor web
-
-gobuster
-
-
-Each OS has a TTL so you can guess which OS is being detected depending on the TTL. Using nmap -O can send a lot of packages, here just with a ping we can see the TTL
-
-It is true that the TTL can be spoofed / manipulated
-but we are talking about defaults
+The -P* options select *ping types*.
