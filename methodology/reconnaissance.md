@@ -15,7 +15,8 @@ Most Internet applications communicate using either the `TCP` or `UDP` protocols
 
 Both protocols use the concept of ports to allow for *multiple applications to coexist on a single IP address*.
 
- Both UDP and TCP support 65,536 (2^16) distinct ports that applications can choose to bind to.
+Because the *port fields* in both the TCP and UDP *headers* are allocated exactly 16 bits of data, the total number of unique port numbers that can be represented is 2 raised to the power of 16.
+Both UDP and TCP support 65,536 (2^16) distinct ports that applications can choose to bind to.
 
 
 > The file `/etc/services` on most Unix machines contains a mapping of common applications to their default port number. 
@@ -56,6 +57,7 @@ These are all host discovery techniques (ping types) used in combination to dete
 
 ### Types of scans.
 
+#### TCP scan
 
 The `SYN` scan relies on three-way handrhake process in which the initial `SYN` packet is sent to a target host, which will respond with a `SYN-ACK` packet if the port is open.
 
@@ -68,9 +70,18 @@ This is referred to as a `stealth scan`, as Unix systems would record or log a c
 
 If no service is listening on a scanned port, the attacker will not receive a `SYN/ACK`. Depending on the configuration of the target's operating system, the attacker could receive an `RST` packet in return, indicating that the port is *closed*.
 
-Alternatively, the attacker may receive no response at all. No response could mean that the port is *filtered* by an intermediate device, such as a firewall or the host itself.
+Alternatively, the attacker may receive no response at all. No response could mean that the port is *filtered* by an intermediate device, such as a firewall or the host itself or there is no host up at that IP address.
 
 On the other hand, it could just be that the response was lost in transit. Thus, while this result typically indicates that the port is closed, but you don't know.
+
+#### UDP scan
+
+UDP scanning is a bit more difficult that TCP scanning. Unlike TCP, UDP does not use handshakes. 
+So the very first packet sent goes directly to the application. UDP applications are prone to discarding packets that they can't parse, so scanner packets are likely to never see a response if an application is listening on a given port.
+
+> However, if an UDP packet is sent to a port without an application bound to it, the IP stack returns an **ICMP port unreachable** packet.
+
+The scanner can assume that any port that returned an *ICMP error* is closed, while ports that didn’t return an answer are either open or filtered by a firewall. It is hard to distinguish between open and filtered ports in UDP.
 
 
 
@@ -91,7 +102,9 @@ The default host discovery done with `-sn` consists of an ICMP echo request, TCP
 
 When executed by an unprivileged user, only SYN packets are sent (using a connect call) to ports 80 and 443 on the target.
 
-When a privileged user tries to scan targets on a local ethernet network, ARP requests are used unless `--send-ip` was specified. 
+When a privileged user tries to scan targets on a local ethernet network, ARP requests are used unless `--send-ip` was specified. If the IP addresses being scanned are on the same subnet as the scanner, ARP packets are used instead; it is a faster and more reliable way to see which IP addresses are in use. 
+
+If the subnet scanned is local, Nmap is nice enough to look up the MAC addresses in its database to tell you who manufactured the network card.
 
 If ICMP packets are blocked, you can also use TCP ACK packets. This is often referred to as a *TCP Ping*.
 
@@ -108,4 +121,18 @@ This makes scanning UDP ports especially challenging. If you receive a response,
 Many administrators tend to focus more on securing TCP-based services and often don't consider UDP-based services when determining their security policies. With this in mind, you can sometimes find (and exploit) vulnerabilities in UDP-based services, giving you another potential entry point to your target system.
 
 
-The -P* options select *ping types*.
+The -P* options select *ping types* or *probe types*.
+
+-Pn (No ping)
+
+Disabling host discovery with -Pn causes Nmap to attempt the requested scanning functions against every target IP address specified. So if a /16 sized network is specified on the command line, all 65,536 IP addresses are scanned as if each target IP is active. Default timing parameters are used, which may result in slower scans.
+
+For machines on a local ethernet network, ARP scanning will still be performed (unless --disable-arp-ping or --send-ip is specified) because Nmap needs MAC addresses to further scan target hosts.
+
+
+
+###### See also:
+
+https://nmap.org/book/man-host-discovery.html
+
+
