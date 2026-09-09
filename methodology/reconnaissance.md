@@ -125,9 +125,18 @@ The -P* options select *ping types* or *probe types*.
 
 -Pn (No ping)
 
-Disabling host discovery with -Pn causes Nmap to attempt the requested scanning functions against every target IP address specified. So if a /16 sized network is specified on the command line, all 65,536 IP addresses are scanned as if each target IP is active. Default timing parameters are used, which may result in slower scans.
+Sending ping (ICMP echo request) packets used to be a reliable way to determine whether a computer was listening at a given IP address.
+ 
+These days, with firewalls becoming more widely deployed, ping packets are sometimes blocked by default.
+
+You can use `-Pn` option which instructs nmap to bypass the host discovery process entirely and instead connect to every port even if the host seems down.
+
+Disabling host discovery with `-Pn` causes Nmap to attempt the requested scanning functions against every target IP address specified. So if a /16 sized network is specified on the command line, all 65,536 IP addresses are scanned as if each target IP is active. Default timing parameters are used, which may result in slower scans.
 
 For machines on a local ethernet network, ARP scanning will still be performed (unless --disable-arp-ping or --send-ip is specified) because Nmap needs MAC addresses to further scan target hosts.
+
+A faster solution to the blocked ping problem is to extend the list of probed ports (using -P* options) to cover more than just pings and TCP port 80 and 443.
+
 
 
 
