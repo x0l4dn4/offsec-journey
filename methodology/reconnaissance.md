@@ -1,5 +1,35 @@
 > Note this is just a draft. Notes has not been completed.
 
+The goal of reconnosinance or scanning phase is to learn more about the target environment by interacting with it.
+Some objectives are determining the assigned IP addresses of clients, servers, firewalls, routers, layer-three switches and other networked devices.
+
+Also it is important to learn the topology of the target environment creating a diagram or a *network map* that shows how the hosts and network devices interconnect.
+
+Additionally, determining the operative system of target devices so in the explotation phase proper vulnerabilites based on the OS can be used.
+
+After that, listing open TCP and UDP ports that can be compromised and verify which service is listening on each  port and the version of the given application that can have a potential vunerability based on the version.
+
+> Network sweep -> Port scan -> OS fingerprint -> Version scan -> Vulnerability scan
+
+
+**Network sweep**: Identify live hosts and IP addresses via active probing. If any type of response is received from the target, including a RST, there is likely a live system at that address.
+
+**Port scan**: Find open TCP and UDP ports by probing the available targets (often discovered via the network
+sweep). If an open port is found, it means a service is both listening and accessible from the current location.
+
+**OS fingerprinting**: Different operative systems respond differntly to specific probes. Use these
+probes and their often-unique responses in an attempt to determine the target operating system.
+Sending these packets to the targets is called *active OS fingerprinting*.
+Alternatively, some sniffing tools include functionality to discern what type of operating system formulated given packets in an entirely passive sense.
+
+**Version scan**: The attacker needs to know the service, and ideally the software version, running on the remote
+port. Although many major services listen on well-known ports (sshd on TCP 22 HTTP on TCP 80), a sysadmin may put these services on alternative ports.
+By interacting with ports during a version scan, protocols they speak and possibly the version of the remote service can be checked.
+
+**Vulnerability scanning**: In these scans the target machine it is measure wheter it  has any one of thousands of
+potential vulnerabilities, which could include misconfigurations or unpatched services.
+
+
 Nmap means network mapper
 
 ### Passive reconnosinance
@@ -89,12 +119,12 @@ The scanner can assume that any port that returned an *ICMP error* is closed, wh
 
 The -s* options select *scan types*
 
-List Scan (-sL)
+##### List Scan (-sL)
 
 This merely lists hosts for scanning, including reverse DNS lookups. It is often surprising how much useful information simple hostnames give out. However, **no traffic is sent to the targets**. This is useful for validating the range of IPs you are working with. If a host's domain name is not recognizeable, it is worth investigating further to prevent scanning the wrong company's network.
 
 
-No port Scan (-sn)
+##### No port Scan (-sn)
 
 Ping Scan allows you to effectively run a ping sweep against the targets that is, there is no port scanning, but unlike the List Scan, we are sending data in the form of pings (specifically, an ICMP ECHO request) to the targets. 
 
@@ -120,10 +150,12 @@ This makes scanning UDP ports especially challenging. If you receive a response,
 
 Many administrators tend to focus more on securing TCP-based services and often don't consider UDP-based services when determining their security policies. With this in mind, you can sometimes find (and exploit) vulnerabilities in UDP-based services, giving you another potential entry point to your target system.
 
+###### Ping sweeps
+
 
 The -P* options select *ping types* or *probe types*.
 
--Pn (No ping)
+##### -Pn (No ping)
 
 Sending ping (ICMP echo request) packets used to be a reliable way to determine whether a computer was listening at a given IP address.
  
