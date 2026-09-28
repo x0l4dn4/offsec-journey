@@ -89,7 +89,7 @@ These are all host discovery techniques (ping types) used in combination to dete
 
 #### TCP scan
 
-The `SYN` scan relies on three-way handrhake process in which the initial `SYN` packet is sent to a target host, which will respond with a `SYN-ACK` packet if the port is open.
+The `SYN` scan relies on three-way handshake process in which the initial `SYN` packet is sent to a target host, which will respond with a `SYN-ACK` packet if the port is open.
 
 However, the *port scanner does not complete the TCP three-stage handshake* by sending an `ACK` packet but instead sends a `RST` packet, shutting down the connection.
 

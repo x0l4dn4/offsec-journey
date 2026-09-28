@@ -23,3 +23,7 @@ Personal repository documenting my journey into offensive cybersecurity.
 - Metasploit
 - Basic scripting
 - Reporting
+
+[Methodology - Reconnaissance](https://github.com/x0l4dn4/offsec-journey/blob/main/methodology/reconnaissance.md)
+[Notes - Networking](https://github.com/x0l4dn4/offsec-journey/blob/main/notes/networking.md)
+[Notes - PF firewall](https://github.com/x0l4dn4/offsec-journey/blob/main/notes/pf.md)
